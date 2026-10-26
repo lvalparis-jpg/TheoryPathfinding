@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="TheoryPathfinding.vcxproj" />
+  <Project Path="TheoryPathfinding.vcxproj" Id="e0148a70-553d-4cad-9c0c-30c553d14889" />
 </Solution>
