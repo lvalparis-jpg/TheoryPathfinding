@@ -32,19 +32,19 @@ void App::DrawGrid()
         {
             if (i == p1.GetxP() && j == p1.GetyP() && i == c1.GetxC() && j == c1.GetyC())
             {
-                std::cout << " [ " << RED << " O " << White << " ] ";
+                std::cout << "[" << RED << "O" << White << "]";
             }
             else if (i == p1.GetxP() && j == p1.GetyP())
             {
-                std::cout << " [ O ] ";
+                std::cout << "[O]";
             }
             else if (i == c1.GetxC() && j == c1.GetyC())
             {
-                std::cout << " [ " << RED << "  " << White <<" ] ";
+                std::cout << "[" << RED << " " << White <<"]";
             }
             else
             {
-                std::cout << " [  ] " ;
+                std::cout << "[ ]" ;
             }
         }
         std::cout << std::endl;
