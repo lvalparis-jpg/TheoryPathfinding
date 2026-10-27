@@ -1,0 +1,6 @@
+﻿  App.cpp
+C:\Users\lvalparis\Documents\GitHub\TheoryPathfinding\TheoryPathfinding\App.cpp(209,30): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+  TheoryPathfinding.cpp
+  grid.cpp
+  Génération de code en cours...
+  TheoryPathfinding.vcxproj -> C:\Users\lvalparis\Documents\GitHub\TheoryPathfinding\TheoryPathfinding\x64\Debug\TheoryPathfinding.exe

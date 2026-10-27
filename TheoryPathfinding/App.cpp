@@ -6,9 +6,9 @@
 
 App::App()
 {
-    InitObstacle();
     p1;
     c1;
+    InitObstacle();
     DrawGrid();
 }
 
@@ -52,7 +52,7 @@ void App::DrawGrid()
             }
             else if (grid[i][j] == true)
             {
-                std::cout << "[H]";
+                std::cout << "[#]";
             }
             else
             {
@@ -84,7 +84,7 @@ void App::HandleInput()
         }
         break;
     case's':
-        if (c1.GetxC() != 9)
+        if (c1.GetxC() != grid.GetRowSize() - 1)
         {
             c1.SetxC(c1.GetxC() + 1);
             path.push_back(std::make_pair(c1.GetxC(), c1.GetyC()));
@@ -100,7 +100,7 @@ void App::HandleInput()
         }
         break;
     case'd':
-        if (c1.GetyC() != 9)
+        if (c1.GetyC() != grid.GetLineSize() - 1)
         {
             c1.SetyC(c1.GetyC() + 1);
             path.push_back(std::make_pair(c1.GetxC(), c1.GetyC()));
@@ -174,9 +174,9 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
             int ny = current.second + dy[d];
             
             //verifie si hors limite
-            if (nx > 9 || nx < 0)
+            if (nx > rows - 1 || nx < 0)
                 continue;
-            else if (ny > 9 || ny < 0)
+            else if (ny > lines - 1 || ny < 0)
                 continue;
 
             //verifie mur
@@ -235,5 +235,9 @@ void App::InitObstacle()
     for (int i = 7; i < 10;i++)
     {
         grid[1][i] = true;
+    }
+    for (int i = 1; i < 3;i++)
+    {
+        grid[3][i] = true;
     }
 }

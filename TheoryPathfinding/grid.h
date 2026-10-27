@@ -10,10 +10,12 @@ public:
 	~Grid();
 
 	//Set
+	void SetRowSize(int value) { row = value; }
+	void SetLineSize(int value) { lines = value; }
 
 	//Get
 	int GetRowSize() { return row; }
-	int GetLineSize() { return row; }
+	int GetLineSize() { return lines; }
 
 	//surcharge
 	std::vector<bool>& operator[](size_t row);
@@ -21,7 +23,8 @@ public:
 private:
 
 	std::vector<std::vector<bool>> grid;
-	int row = 10;
-	int lines = 10;
+
+	int row = 20;
+	int lines = 20;
 };
 

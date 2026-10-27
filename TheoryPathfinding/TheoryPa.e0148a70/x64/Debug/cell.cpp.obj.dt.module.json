@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "TheoryPa.e0148a70\\x64\\Debug\\cell.obj",
+            "outputs": [
+                "TheoryPa.e0148a70\\x64\\Debug\\cell.cpp.obj.dt.module.json",
+                "TheoryPa.e0148a70\\x64\\Debug\\cell.cpp.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}
