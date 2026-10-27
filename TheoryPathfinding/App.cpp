@@ -63,6 +63,10 @@ void App::DrawGrid()
     }
 	std::cout << std::endl;
 	std::cout << deplacement << std::endl;
+    if (attainable == false)
+    {
+        std::cout <<"Inatteignable"<< std::endl;
+    }
 }
 
 void App::HandleInput()
@@ -104,15 +108,19 @@ void App::HandleInput()
         }
         break;
     case ENTER:
+        attainable = true;
         BFS(std::make_pair(p1.GetxP(), p1.GetyP()),std::make_pair(c1.GetxC(),c1.GetyC()));
-		for (int i = 0; i < path.size(); i++)
-		{
-            deplacement--;
-			std::this_thread::sleep_for(std::chrono::milliseconds(200));
-			p1.SetxP(path[i].first);
-			p1.SetyP(path[i].second);
-			Draw();
-		}
+        if (attainable)
+        {
+            for (int i = 0; i < path.size(); i++)
+            {
+                deplacement--;
+                std::this_thread::sleep_for(std::chrono::milliseconds(300));
+                p1.SetxP(path[i].first);
+                p1.SetyP(path[i].second);
+                Draw();
+            }
+        }
         break;
     case ESCAPE:
         exit(0);
@@ -165,15 +173,17 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
             int nx = current.first + dx[d];
             int ny = current.second + dy[d];
             
-
+            //verifie si hors limite
             if (nx > 9 || nx < 0)
                 continue;
             else if (ny > 9 || ny < 0)
                 continue;
 
+            //verifie mur
             if (grid[nx][ny] == true)
                 continue;
 
+            //verifie si deja passer
             if (visited[nx][ny])
                 continue;
             
@@ -186,7 +196,10 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
     std::vector<std::pair<int, int>> result;
 
     if (visited[target.first][target.second] == false)
-        std::cout << "Inatteignable" << std::endl;
+    {
+        attainable = false;
+        return;
+    }
 
     for (std::pair<int, int> cur = target; cur != start; cur = parent[cur.first][cur.second])
         result.push_back(cur);
@@ -216,6 +229,10 @@ void App::InitObstacle()
         grid[i][7] = true;
     }
     for (int i = 0; i < 2;i++)
+    {
+        grid[1][i] = true;
+    }
+    for (int i = 7; i < 10;i++)
     {
         grid[1][i] = true;
     }

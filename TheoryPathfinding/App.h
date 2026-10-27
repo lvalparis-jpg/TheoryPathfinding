@@ -74,4 +74,6 @@ private:
 	Cursor c1;
 
 	int deplacement = 0;
+
+	bool attainable = true;
 };
