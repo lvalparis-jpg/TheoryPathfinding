@@ -37,6 +37,20 @@ struct Cursor
 	void SetyC(int value) { yc = value; }
 };
 
+//struct Obstacle
+//{
+//	int xo;
+//	int yo;
+//
+//	//Get
+//	int GetxO() { return xo; }
+//	int GetyO() { return yo; }
+//
+//	//Set
+//	void SetxO(int value) { xo = value; }
+//	void SetyO(int value) { yo = value; }
+//};
+
 class App
 {
 public:
@@ -49,6 +63,7 @@ public:
 	void DrawGrid();
 	void HandleInput();
 	void BFS(std::pair<int, int> start, std::pair<int, int> target);
+	void InitObstacle();
 
 private:
 

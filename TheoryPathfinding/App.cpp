@@ -6,9 +6,10 @@
 
 App::App()
 {
-    DrawGrid();
+    InitObstacle();
     p1;
     c1;
+    DrawGrid();
 }
 
 App::~App()
@@ -44,6 +45,14 @@ void App::DrawGrid()
             else if (i == c1.GetxC() && j == c1.GetyC())
             {
                 std::cout << "[" << RED << " " << White <<"]";
+            }
+            else if (grid[i][j] == true && i == c1.GetxC() && j == c1.GetyC())
+            {
+                std::cout << "[" << RED << "H" << White << "]";
+            }
+            else if (grid[i][j] == true)
+            {
+                std::cout << "[H]";
             }
             else
             {
@@ -99,12 +108,14 @@ void App::HandleInput()
 		for (int i = 0; i < path.size(); i++)
 		{
             deplacement--;
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			p1.SetxP(path[i].first);
 			p1.SetyP(path[i].second);
 			Draw();
 		}
         break;
+    case ESCAPE:
+        exit(0);
     }
 }
 
@@ -150,12 +161,17 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
 
         for (int d = 0; d < 4; d++)
         {
+
             int nx = current.first + dx[d];
             int ny = current.second + dy[d];
             
+
             if (nx > 9 || nx < 0)
                 continue;
             else if (ny > 9 || ny < 0)
+                continue;
+
+            if (grid[nx][ny] == true)
                 continue;
 
             if (visited[nx][ny])
@@ -179,4 +195,28 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
 
     deplacement = result.size();
     path = result;
+}
+
+void App::InitObstacle()
+{
+    for (int i = 4; i < 7;i++)
+    {
+        grid[i][5] = true;
+    }
+    for (int i = 2; i < 5;i++)
+    {
+        grid[8][i] = true;
+    }
+    for (int i = 0; i < 5;i++)
+    {
+        grid[i][3] = true;
+    }
+    for (int i = 0; i < 8;i++)
+    {
+        grid[i][7] = true;
+    }
+    for (int i = 0; i < 2;i++)
+    {
+        grid[1][i] = true;
+    }
 }
