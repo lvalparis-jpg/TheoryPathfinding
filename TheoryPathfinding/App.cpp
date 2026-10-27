@@ -177,5 +177,6 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
 
     std::reverse(result.begin(), result.end());
 
+    deplacement = result.size();
     path = result;
 }
