@@ -1,21 +1,34 @@
 #include "SampleScene.h"
-
 #include "DummyEntity.h"
 #include "InputManager.h"
 #include "Debug.h"
 
+#include <Entity.h>
 #include <queue>
 #include <unordered_map>
 #include <string>
-#include <algorithm>
 #include <cmath>
+#include <random>
+
+int GetRandomNumber(int min, int max)
+{
+    static std::random_device rd;
+
+    static std::mt19937 gen(rd());
+
+    std::uniform_int_distribution<> dis(min, max);
+
+    return dis(gen);
+}
+
+#define maybe GetRandomNumber(0,1)
 
 void SampleScene::OnInitialize()
 {
     InitObstacles();
 
-    float gridW = mGrid.GetRowSize() * CELL_SIZE;
-    float gridH = mGrid.GetLineSize() * CELL_SIZE;
+    const float gridW = mGrid.GetRowSize() * CELL_SIZE;
+    const float gridH = mGrid.GetLineSize() * CELL_SIZE;
     mOrigin = { (GetWindowWidth() - gridW) * 0.5f, (GetWindowHeight() - gridH) * 0.5f };
 
     mpPlayerNode = mGrid[0][0];
@@ -32,11 +45,15 @@ void SampleScene::OnUpdate()
     DrawGrid();
 
     Debug::DrawText({ 10.f, 10.f },
-        "ZQSD : deplacer le curseur - Entree :lancer le pathfinding", Color::White);
+        "ZQSD : deplacer le curseur - Entree : lancer le pathfinding", Color::White);
 
     if (mReachable == false)
     {
         Debug::DrawText({ 10.f, 40.f }, "Inatteignable", Color::Orange);
+    }
+    else if (mpPlayerNode->GetX() == mpCursorNode->GetX() && mpPlayerNode->GetY() == mpCursorNode->GetY())
+    {
+        Debug::DrawText({ 10.0f, 60.0f }, "C'est atteint", Color::Cyan);
     }
     else if (mIsMoving)
     {
@@ -56,6 +73,9 @@ void SampleScene::HandleInput()
 
     if (input->IsKeyDown(SDLK_RETURN) && mIsMoving == false)
         StartPathfinding();
+
+    if (input->IsKeyDown(SDLK_ESCAPE))
+        exit(0);
 }
 
 void SampleScene::MoveCursor(int dRow, int dCol)
@@ -101,8 +121,8 @@ bool SampleScene::BFS(Node* start, Node* target)
     std::queue<Node*> toVisit;
     std::unordered_map<Node*, Node*> parent;
 
-    int dx[4] = { -1, 1, 0, 0 };
-    int dy[4] = { 0, 0, -1, 1 };
+    const int dx[4] = { -1, 1, 0, 0 };
+    const int dy[4] = { 0, 0, -1, 1 };
 
     toVisit.push(start);
     start->SetIsVisited(true);
@@ -159,31 +179,32 @@ void SampleScene::UpdateMovement()
 
     mStepTimer -= STEP_DELAY;
 
-    mpPlayerNode = mPath[mPathIndex];
-    mPathIndex++;
-    mpPlayer->SetPosition(NodeCenter(mpPlayerNode));
-
-    if (mPathIndex >= mPath.size())
+    if (maybe)
     {
-        mIsMoving = false;
-        mPath.clear();
-        mPathIndex = 0;
+        mpPlayerNode = mPath[mPathIndex];
+        mPathIndex++;
+        mpPlayer->SetPosition(NodeCenter(mpPlayerNode));
+
+        if (mPathIndex >= mPath.size())
+        {
+            mIsMoving = false;
+            mPath.clear();
+            mPathIndex = 0;
+        }
     }
 }
 
 Vector2f SampleScene::NodeCenter(Node* node)
 {
-    return {
-        mOrigin.x + (node->GetY() + 0.5f) * CELL_SIZE,
-        mOrigin.y + (node->GetX() + 0.5f) * CELL_SIZE
-    };
+    Vector2f center = { mOrigin.x + (node->GetY() + 0.5f) * CELL_SIZE ,mOrigin.y + (node->GetX() + 0.5f) * CELL_SIZE };
+    return center;
 }
 
 void SampleScene::DrawGrid()
 {
-    int lines = mGrid.GetLineSize();
-    int rows = mGrid.GetRowSize();
-    Color gridColor{ 90, 90, 110 };
+    const int lines = mGrid.GetLineSize();
+    const int rows = mGrid.GetRowSize();
+    Color gridColor{ 0, 0, 0 };
 
     for (int i = 0; i <= lines; i++)
     {
@@ -218,7 +239,7 @@ void SampleScene::DrawGrid()
     if (mpCursorNode == mpPlayerNode)
         DrawSquare(NodeCenter(mpCursorNode), 26.f, red, false);
     else
-        DrawSquare(NodeCenter(mpCursorNode), 12.f, red, true);
+        DrawSquare(NodeCenter(mpCursorNode), 15.f, red, true);
 }
 
 void SampleScene::DrawSquare(Vector2f center, float size, const Color& color, bool filled)
@@ -241,11 +262,27 @@ void SampleScene::DrawSquare(Vector2f center, float size, const Color& color, bo
 
 void SampleScene::InitObstacles()
 {
-    for (int i = 4; i < 7; i++)  mGrid[i][5]->SetIsWall(true);
-    for (int i = 2; i < 5; i++)  mGrid[8][i]->SetIsWall(true);
-    for (int i = 0; i < 5; i++)  mGrid[i][3]->SetIsWall(true);
-    for (int i = 0; i < 8; i++)  mGrid[i][7]->SetIsWall(true);
-    for (int i = 0; i < 2; i++)  mGrid[1][i]->SetIsWall(true);
-    for (int i = 7; i < 10; i++) mGrid[1][i]->SetIsWall(true);
-    for (int i = 1; i < 3; i++)  mGrid[3][i]->SetIsWall(true);
+    for (int i = 4; i < 7; i++)
+        mGrid[i][5]->SetIsWall(true);
+
+    for (int i = 2; i < 5; i++)
+        mGrid[8][i]->SetIsWall(true);
+
+    for (int i = 0; i < 5; i++)
+        mGrid[i][3]->SetIsWall(true);
+
+    for (int i = 0; i < 8; i++)
+        mGrid[i][7]->SetIsWall(true);
+
+    for (int i = 0; i < 2; i++)
+        mGrid[1][i]->SetIsWall(true);
+
+    for (int i = 7; i < 10; i++)
+        mGrid[1][i]->SetIsWall(true);
+
+    for (int i = 1; i < 3; i++)
+        mGrid[3][i]->SetIsWall(true);
+
+    for (int i = 0; i < 5; i++)
+        mGrid[i][10]->SetIsWall(true);
 }

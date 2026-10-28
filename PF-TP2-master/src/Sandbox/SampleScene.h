@@ -41,6 +41,8 @@ class SampleScene : public Scene
     void DrawSquare(Vector2f center, float size, const Color& color, bool filled);
 
 public:
+
     void OnInitialize() override;
     void OnUpdate() override;
+
 };
