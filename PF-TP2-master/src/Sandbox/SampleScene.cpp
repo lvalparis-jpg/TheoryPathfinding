@@ -76,6 +76,17 @@ void SampleScene::HandleInput()
 
     if (input->IsKeyDown(SDLK_ESCAPE))
         exit(0);
+
+    if (input->IsMouseDown(SDL_BUTTON_LEFT))
+    {
+        int mousex = input->GetMousePosition().x;
+        int mousey = input->GetMousePosition().y;
+
+        if (IsInGrid(mousex,mousey))
+        {
+
+        }
+    }
 }
 
 void SampleScene::MoveCursor(int dRow, int dCol)
@@ -179,7 +190,7 @@ void SampleScene::UpdateMovement()
 
     mStepTimer -= STEP_DELAY;
 
-    if (maybe)
+    /*if (maybe)//simule la fatigue
     {
         mpPlayerNode = mPath[mPathIndex];
         mPathIndex++;
@@ -190,7 +201,18 @@ void SampleScene::UpdateMovement()
             mIsMoving = false;
             mPath.clear();
             mPathIndex = 0;
-        }
+        } 
+    }*/
+
+    mpPlayerNode = mPath[mPathIndex];
+    mPathIndex++;
+    mpPlayer->SetPosition(NodeCenter(mpPlayerNode));
+
+    if (mPathIndex >= mPath.size())
+    {
+        mIsMoving = false;
+        mPath.clear();
+        mPathIndex = 0;
     }
 }
 
@@ -231,7 +253,7 @@ void SampleScene::DrawGrid()
     if (mIsMoving)
     {
         for (size_t k = mPathIndex; k < mPath.size(); k++)
-            Debug::DrawCircle(NodeCenter(mPath[k]), 3.f, Color::Orange, true);
+            Debug::DrawCircle(NodeCenter(mPath[k]), 3.f, Color::Red, true);
     }
 
     Color red{ 255, 0, 0 };
@@ -285,4 +307,12 @@ void SampleScene::InitObstacles()
 
     for (int i = 0; i < 5; i++)
         mGrid[i][10]->SetIsWall(true);
+}
+
+void SampleScene::CarveMaze()
+{
+}
+
+void SampleScene::GenerateMaze()
+{
 }

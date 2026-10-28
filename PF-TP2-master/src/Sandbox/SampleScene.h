@@ -11,7 +11,7 @@ class DummyEntity;
 class SampleScene : public Scene
 {
     float CELL_SIZE = 32.f;
-    float STEP_DELAY = 0.3f;
+    float STEP_DELAY = 0.001f;
 
     Grid mGrid;
     Vector2f mOrigin = { 0.f, 0.f };
@@ -39,6 +39,9 @@ class SampleScene : public Scene
 
     void DrawGrid();
     void DrawSquare(Vector2f center, float size, const Color& color, bool filled);
+
+    void CarveMaze();
+    void GenerateMaze();
 
 public:
 
