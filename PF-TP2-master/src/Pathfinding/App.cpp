@@ -30,7 +30,7 @@ void App::Draw()
 
 void App::DrawGrid()
 {
-    for (int i = 0; i < grid.GetLineSize(); i++)
+    for (int i = 0; i < grid.GetColSize(); i++)
     {
         for (int j = 0; j < grid.GetRowSize(); j++)
         {
@@ -100,7 +100,7 @@ void App::HandleInput()
         }
         break;
     case'd':
-        if (c1.GetyC() != grid.GetLineSize() - 1)
+        if (c1.GetyC() != grid.GetColSize() - 1)
         {
             c1.SetyC(c1.GetyC() + 1);
             path.push_back(std::make_pair(c1.GetxC(), c1.GetyC()));
@@ -129,7 +129,7 @@ void App::HandleInput()
 
 void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
 {
-    int lines = grid.GetLineSize();
+    int lines = grid.GetColSize();
     int rows = grid.GetRowSize();
 
     std::queue<std::pair<int, int>> toVisit;

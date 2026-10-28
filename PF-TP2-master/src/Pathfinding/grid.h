@@ -17,7 +17,7 @@ public:
 
 	//Get
 	int GetRowSize() { return row; }
-	int GetLineSize() { return lines; }
+	int GetColSize() { return lines; }
 
 	//surcharge
 	std::vector<Node*>& operator[](size_t row);
@@ -26,7 +26,7 @@ private:
 
 	std::vector<std::vector<Node*>> grid;
 
-	int row = 20;
-	int lines = 20;
+	int row = 23;
+	int lines = 23;
 };
 

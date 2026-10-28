@@ -1,14 +1,4 @@
 #include "SampleScene.h"
-#include "DummyEntity.h"
-#include "InputManager.h"
-#include "Debug.h"
-
-#include <Entity.h>
-#include <queue>
-#include <unordered_map>
-#include <string>
-#include <cmath>
-#include <random>
 
 int GetRandomNumber(int min, int max)
 {
@@ -25,14 +15,15 @@ int GetRandomNumber(int min, int max)
 
 void SampleScene::OnInitialize()
 {
-    InitObstacles();
+    GenerateMaze();
 
     const float gridW = mGrid.GetRowSize() * CELL_SIZE;
-    const float gridH = mGrid.GetLineSize() * CELL_SIZE;
+    const float gridH = mGrid.GetColSize() * CELL_SIZE;
+
     mOrigin = { (GetWindowWidth() - gridW) * 0.5f, (GetWindowHeight() - gridH) * 0.5f };
 
-    mpPlayerNode = mGrid[0][0];
-    mpCursorNode = mGrid[0][0];
+    mpPlayerNode = mGrid[1][1];
+    mpCursorNode = mGrid[1][1];
 
     mpPlayer = CreateEntity<DummyEntity>(10.f, Color::Cyan);
     mpPlayer->SetPosition(NodeCenter(mpPlayerNode));
@@ -79,13 +70,12 @@ void SampleScene::HandleInput()
 
     if (input->IsMouseDown(SDL_BUTTON_LEFT))
     {
-        int mousex = input->GetMousePosition().x;
-        int mousey = input->GetMousePosition().y;
+        Vector2f mouse = input->GetMousePosition();
+        int col = static_cast<int>(std::floor((mouse.x - mOrigin.x) / CELL_SIZE));
+        int row = static_cast<int>(std::floor((mouse.y - mOrigin.y) / CELL_SIZE));
 
-        if (IsInGrid(mousex,mousey))
-        {
-
-        }
+        if (IsInGrid(row, col))
+            mpCursorNode = mGrid[row][col];
     }
 }
 
@@ -100,7 +90,7 @@ void SampleScene::MoveCursor(int dRow, int dCol)
 
 bool SampleScene::IsInGrid(int row, int col)
 {
-    return row >= 0 && row < mGrid.GetLineSize() && col >= 0 && col < mGrid.GetRowSize();
+    return row >= 0 && row < mGrid.GetColSize() && col >= 0 && col < mGrid.GetRowSize();
 }
 
 void SampleScene::StartPathfinding()
@@ -117,7 +107,7 @@ void SampleScene::StartPathfinding()
 
 void SampleScene::ResetVisited()
 {
-    for (int i = 0; i < mGrid.GetLineSize(); i++)
+    for (int i = 0; i < mGrid.GetColSize(); i++)
     {
         for (int j = 0; j < mGrid.GetRowSize(); j++)
             mGrid[i][j]->SetIsVisited(false);
@@ -224,7 +214,7 @@ Vector2f SampleScene::NodeCenter(Node* node)
 
 void SampleScene::DrawGrid()
 {
-    const int lines = mGrid.GetLineSize();
+    const int lines = mGrid.GetColSize();
     const int rows = mGrid.GetRowSize();
     Color gridColor{ 0, 0, 0 };
 
@@ -282,37 +272,122 @@ void SampleScene::DrawSquare(Vector2f center, float size, const Color& color, bo
     }
 }
 
-void SampleScene::InitObstacles()
-{
-    for (int i = 4; i < 7; i++)
-        mGrid[i][5]->SetIsWall(true);
+//void SampleScene::InitObstacles()
+//{
+//    for (int i = 4; i < 7; i++)
+//        mGrid[i][5]->SetIsWall(true);
+//
+//    for (int i = 2; i < 5; i++)
+//        mGrid[8][i]->SetIsWall(true);
+//
+//    for (int i = 0; i < 5; i++)
+//        mGrid[i][3]->SetIsWall(true);
+//
+//    for (int i = 0; i < 8; i++)
+//        mGrid[i][7]->SetIsWall(true);
+//
+//    for (int i = 0; i < 2; i++)
+//        mGrid[1][i]->SetIsWall(true);
+//
+//    for (int i = 7; i < 10; i++)
+//        mGrid[1][i]->SetIsWall(true);
+//
+//    for (int i = 1; i < 3; i++)
+//        mGrid[3][i]->SetIsWall(true);
+//
+//    for (int i = 0; i < 5; i++)
+//        mGrid[i][10]->SetIsWall(true);
+//}
 
-    for (int i = 2; i < 5; i++)
-        mGrid[8][i]->SetIsWall(true);
+void SampleScene::addEntranceAndExit() {
 
-    for (int i = 0; i < 5; i++)
-        mGrid[i][3]->SetIsWall(true);
+    // Set the entrance at the top (fixed)
+    for (int x = 1; x < mGrid.GetRowSize(); x += 2) { // start at cell next to left/top border, move by unit of 2 to stay in structure
+        if (mGrid[1][x]->GetIsWall() == false) { // Find a valid entry point
+            mGrid[0][x]->SetIsWall(false);// Open entrance
+            mpPlayerNode = mGrid[0][x]; // Set player start position
+            mpCursorNode = mGrid[0][x]; // Set cursor start position
+            break;
+        }
+    }
 
-    for (int i = 0; i < 8; i++)
-        mGrid[i][7]->SetIsWall(true);
+    // Find all possible exit locations on the bottom row and add that index to vector
+    std::vector<int> validExits;
+    for (int x = 1; x < mGrid.GetRowSize(); x += 2) {
+        if (mGrid[mGrid.GetColSize() - 2][x]->GetIsWall() == false)
+        {
+            validExits.push_back(x); // Store all possible exits
+        }
+    }
 
-    for (int i = 0; i < 2; i++)
-        mGrid[1][i]->SetIsWall(true);
-
-    for (int i = 7; i < 10; i++)
-        mGrid[1][i]->SetIsWall(true);
-
-    for (int i = 1; i < 3; i++)
-        mGrid[3][i]->SetIsWall(true);
-
-    for (int i = 0; i < 5; i++)
-        mGrid[i][10]->SetIsWall(true);
+    // Pick a random exit (index) from vector, if there are valid options
+    if (!validExits.empty()) {
+        int exitIndex = validExits[m_RNG() % validExits.size()]; // Select a random valid exit
+        mGrid[mGrid.GetColSize() - 2][exitIndex]->SetIsWall(false); // Open exit
+    }
 }
 
-void SampleScene::CarveMaze()
-{
+void SampleScene::CarveMaze(int x, int y) {
+
+    // Moves two cells at a time to ensure clear paths are created and walls remain intact between paths.
+    static const int dx[] = { 0,  0, -2,  2 }; // Movement offsets for Left & Right
+    static const int dy[] = { -2, 2,  0,  0 }; // Movement offsets for Up & Down
+
+    // List of direction indices (0: Up, 1: Down, 2: Left, 3: Right) - reused across function calls
+    static std::vector<int> dirs = { 0, 1, 2, 3 };
+
+    // A <algorithm> library function to randomly shuffle the directions to create unique maze structures on each generation
+    std::shuffle(dirs.begin(), dirs.end(), SampleScene::m_RNG);
+
+    // Mark the current cell/location (passed in as arg) as an open path (' ')
+    mGrid[y][x]->SetIsWall(false);
+
+    // lambda function to easily check the bounds of ny and nx(below) to ensure we are not at border or beyond
+    auto isBounds = [](int ax, int bound) {
+        return (ax > 0) && (ax < bound - 1);
+        };
+
+    // Iterate through shuffled directions to determine where to move next
+    for (int dir : dirs) {
+        // Calculate the new cell coordinates by moving two steps in the chosen direction
+        // This moves in unit of 2
+        int nx = x + dx[dir]; // new x position
+        int ny = y + dy[dir]; // new y position
+
+        // Check if the new cell is within the grid boundaries and is still a wall ('#')
+        if (isBounds(ny, mGrid.GetColSize()) && isBounds(nx, mGrid.GetRowSize()) && mGrid[ny][nx]->GetIsWall())
+        {
+
+            // Carve a passage by opening the wall between the current cell and the new cell
+            // We divide by 2 to get the actual neighbor cell (since we move by a unit of 2) and set element to space to connect passage with the current cell
+            mGrid[y + dy[dir] / 2][x + dx[dir] / 2]->SetIsWall(false);
+
+            // Recursively call CarveMaze on the new cell to continue carving paths - will carve down to last cell and return back up
+            CarveMaze(nx, ny);
+        }
+    }
 }
 
 void SampleScene::GenerateMaze()
 {
+
+    if (mGrid.GetColSize() <= 0 || mGrid.GetRowSize() <= 0)
+    {
+        std::cout << "Set the maze dimensions first!\n";
+        return;
+    }
+
+    m_RNG.seed(std::random_device{}()); // generate new seed for randomness
+
+    for (int i = 0; i < mGrid.GetColSize();i++) // Fill entire grid with walls - initializes the vector to a new size and fills it
+    {
+        for (int j = 0; j < mGrid.GetRowSize();j++)
+        {
+            mGrid[i][j]->SetIsWall(true);
+        }
+    }
+
+    CarveMaze(1, 1); // Recursively carve path ways, randomly starting from (0,0) position (inside border)
+
+    addEntranceAndExit(); // adds an entrance and exit to the existing new maze
 }

@@ -1,9 +1,18 @@
 #pragma once
-
+#include "SampleScene.h"
+#include "DummyEntity.h"
+#include "InputManager.h"
+#include "Debug.h"
 #include "Scene.h"
 #include "Vector.h"
 #include "grid.h"
 
+#include <Entity.h>
+#include <queue>
+#include <unordered_map>
+#include <string>
+#include <cmath>
+#include <random>
 #include <vector>
 
 class DummyEntity;
@@ -26,7 +35,8 @@ class SampleScene : public Scene
     bool mIsMoving = false;
     bool mReachable = true;
 
-    void InitObstacles();
+    std::mt19937 m_RNG;
+
     void HandleInput();
     void MoveCursor(int dRow, int dCol);
     void StartPathfinding();
@@ -40,7 +50,8 @@ class SampleScene : public Scene
     void DrawGrid();
     void DrawSquare(Vector2f center, float size, const Color& color, bool filled);
 
-    void CarveMaze();
+    void CarveMaze(int x,int y);
+    void addEntranceAndExit();
     void GenerateMaze();
 
 public:
