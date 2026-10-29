@@ -22,8 +22,8 @@ void SampleScene::OnInitialize()
 
     mOrigin = { (GetWindowWidth() - gridW) * 0.5f, (GetWindowHeight() - gridH) * 0.5f };
 
-    mpPlayerNode = mGrid[1][1];
-    mpCursorNode = mGrid[1][1];
+    mpPlayerNode = mGrid[0][1];
+    mpCursorNode = mGrid[0][1];
 
     mpPlayer = CreateEntity<DummyEntity>(10.f, Color::Cyan);
     mpPlayer->SetPosition(NodeCenter(mpPlayerNode));
@@ -343,12 +343,14 @@ void SampleScene::CarveMaze(int x, int y) {
     mGrid[y][x]->SetIsWall(false);
 
     // lambda function to easily check the bounds of ny and nx(below) to ensure we are not at border or beyond
-    auto isBounds = [](int ax, int bound) {
+    auto isBounds = [](int ax, int bound)
+        {
         return (ax > 0) && (ax < bound - 1);
         };
 
     // Iterate through shuffled directions to determine where to move next
-    for (int dir : dirs) {
+    for (int dir : dirs)
+    {
         // Calculate the new cell coordinates by moving two steps in the chosen direction
         // This moves in unit of 2
         int nx = x + dx[dir]; // new x position
