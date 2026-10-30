@@ -72,14 +72,19 @@ void App::DrawGrid()
 void App::HandleInput()
 {
     int k =_getch();
-    
+
+    Node* tempNode1 = new Node();
+    Node* tempNode2 = new Node();
+
     switch (k)
     {
     case'z':
         if (c1.GetxC() != 0)
         {
             c1.SetxC(c1.GetxC() - 1);
-            path.push_back(std::make_pair(c1.GetxC(), c1.GetyC()));
+            tempNode1->SetX(c1.GetxC());
+            tempNode1->SetY(c1.GetyC());
+            path.push_back(tempNode1);
 			deplacement++;
         }
         break;
@@ -87,7 +92,9 @@ void App::HandleInput()
         if (c1.GetxC() != grid.GetRowSize() - 1)
         {
             c1.SetxC(c1.GetxC() + 1);
-            path.push_back(std::make_pair(c1.GetxC(), c1.GetyC()));
+            tempNode1->SetX(c1.GetxC());
+            tempNode1->SetY(c1.GetyC());
+            path.push_back(tempNode1);
             deplacement++;
         }
         break;
@@ -95,7 +102,9 @@ void App::HandleInput()
         if (c1.GetyC() != 0)
         {
             c1.SetyC(c1.GetyC() - 1);
-            path.push_back(std::make_pair(c1.GetxC(), c1.GetyC()));
+            tempNode1->SetX(c1.GetxC());
+            tempNode1->SetY(c1.GetyC());
+            path.push_back(tempNode1);
             deplacement++;
         }
         break;
@@ -103,21 +112,37 @@ void App::HandleInput()
         if (c1.GetyC() != grid.GetColSize() - 1)
         {
             c1.SetyC(c1.GetyC() + 1);
-            path.push_back(std::make_pair(c1.GetxC(), c1.GetyC()));
+            tempNode1->SetX(c1.GetxC());
+            tempNode1->SetY(c1.GetyC());
+            path.push_back(tempNode1);
             deplacement++;
         }
         break;
     case ENTER:
         attainable = true;
-        BFS(std::make_pair(p1.GetxP(), p1.GetyP()),std::make_pair(c1.GetxC(),c1.GetyC()));
+
+        tempNode1->SetX(p1.GetxP());
+        tempNode1->SetY(p1.GetyP());
+        tempNode2->SetX(c1.GetxC());
+        tempNode2->SetY(c1.GetyC());
+
+        if (ActivateCost)
+        {
+            Djikstra(tempNode1, tempNode2);
+        }
+        else
+        {
+            BFS(tempNode1,tempNode2);
+        }
+
         if (attainable)
         {
             for (int i = 0; i < path.size(); i++)
             {
                 deplacement--;
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
-                p1.SetxP(path[i].first);
-                p1.SetyP(path[i].second);
+                p1.SetxP(path[i]->GetX());
+                p1.SetyP(path[i]->GetY());
                 Draw();
             }
         }
@@ -127,18 +152,20 @@ void App::HandleInput()
     }
 }
 
-void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
+void App::BFS(Node* start, Node* target)
 {
     int lines = grid.GetColSize();
     int rows = grid.GetRowSize();
 
-    std::queue<std::pair<int, int>> toVisit;
+    std::queue<Node*> toVisit;
 
     std::vector<std::vector<bool>> visited;
-    std::vector<std::vector<std::pair<int, int>>> parent;
+    std::vector<std::vector<Node*>> parent;
 
     visited.resize(lines);
     parent.resize(lines);
+
+    Node* tempNode = new Node();
 
     for (int i = 0; i < lines; i++)
     {
@@ -148,7 +175,8 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
         for (int j = 0; j < rows; j++)
         {
             visited[i][j] = false;
-            parent[i][j] = std::make_pair(-1, -1);
+            parent[i][j]->SetX(-1);
+            parent[i][j]->SetY(-1);
         }
     }
 
@@ -157,11 +185,12 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
 
     toVisit.push(start);
 
-    visited[start.first][start.second] = true;
+    visited[start->GetX()][start->GetY()] = true;
 
     while (toVisit.empty() == false)
     {
-        std::pair<int, int> current = toVisit.front();
+
+        Node* current = toVisit.front();
         toVisit.pop();
 
         if (current == target)
@@ -170,9 +199,9 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
         for (int d = 0; d < 4; d++)
         {
 
-            int nx = current.first + dx[d];
-            int ny = current.second + dy[d];
-            
+            int nx = current->GetX() + dx[d];
+            int ny = current->GetY() + dy[d];
+
             //verifie si hors limite
             if (nx > rows - 1 || nx < 0)
                 continue;
@@ -186,22 +215,120 @@ void App::BFS(std::pair<int, int> start, std::pair<int, int> target)
             //verifie si deja passer
             if (visited[nx][ny])
                 continue;
-            
+
             visited[nx][ny] = true;
             parent[nx][ny] = current;
-            toVisit.push({ nx, ny });
+            tempNode->SetX(nx);
+            tempNode->SetY(ny);
+            toVisit.push(tempNode);
         }
     }
 
-    std::vector<std::pair<int, int>> result;
+    std::vector<Node*> result;
 
-    if (visited[target.first][target.second] == false)
+    if (visited[target->GetX()][target->GetY()] == false)
     {
         attainable = false;
         return;
     }
 
-    for (std::pair<int, int> cur = target; cur != start; cur = parent[cur.first][cur.second])
+    for (Node* cur = target; cur != start; cur = parent[cur->GetX()][cur->GetY()])
+        result.push_back(cur);
+
+    std::reverse(result.begin(), result.end());
+
+    deplacement = result.size();
+    path = result;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void App::Djikstra(Node* start, Node* target)
+{
+    int lines = grid.GetColSize();
+    int rows = grid.GetRowSize();
+
+    std::vector<Node*> toVisit;
+
+    std::vector<std::vector<bool>> visited;
+    std::vector<std::vector<Node*>> parent;
+
+    visited.resize(lines);
+    parent.resize(lines);
+
+    Node* tempNode = new Node();
+
+    for (int i = 0; i < lines; i++)
+    {
+        visited[i].resize(rows);
+        parent[i].resize(rows);
+
+        for (int j = 0; j < rows; j++)
+        {
+            visited[i][j] = false;
+            parent[i][j]->SetX(-1);
+            parent[i][j]->SetY(-1);
+        }
+    }
+
+    int dx[4] = { -1, 1, 0, 0 };
+    int dy[4] = { 0, 0, -1, 1 };
+
+    toVisit.push_back(start);
+
+    visited[start->GetX()][start->GetY()] = true;
+
+    int minCost = 0;
+
+    while (toVisit.empty() == false)
+    {
+
+        Node* current = toVisit.front();
+        toVisit.pop_back();
+
+        if (current == target)
+            break;
+        
+        for (int d = 0; d < 4; d++)
+        {
+
+            int nx = current->GetX() + dx[d];
+            int ny = current->GetY() + dy[d];
+
+            //verifie si hors limite
+            if (nx > rows - 1 || nx < 0)
+                continue;
+            else if (ny > lines - 1 || ny < 0)
+                continue;
+
+            //verifie mur
+            if (grid[nx][ny]->GetIsWall() == true)
+                continue;
+
+            //verifie si deja passer
+            if (visited[nx][ny])
+                continue;
+
+            visited[nx][ny] = true;
+            parent[nx][ny] = current;
+            cost = cost + current->GetLevel();
+            tempNode->SetX(nx);
+            tempNode->SetY(ny);
+            toVisit.push_back(tempNode);
+        }
+    }
+
+    std::vector<Node*> result;
+
+    if (visited[target->GetX()][target->GetY()] == false)
+    {
+        attainable = false;
+        return;
+    }
+
+    for (Node* cur = target; cur != start; cur = parent[cur->GetX()][cur->GetY()])
         result.push_back(cur);
 
     std::reverse(result.begin(), result.end());

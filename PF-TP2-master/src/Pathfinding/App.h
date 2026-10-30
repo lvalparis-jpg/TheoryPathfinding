@@ -48,12 +48,16 @@ public:
 	void Draw();
 	void DrawGrid();
 	void HandleInput();
-	void BFS(std::pair<int, int> start, std::pair<int, int> target);
+	void BFS(Node* start, Node* target);
+	void Djikstra(Node* start, Node* target);
 	void InitObstacle();
+
+    int partition(std::vector<int>& vec, int low, int high);
+    void quickSort(std::vector<int>& vec, int low, int high);
 
 private:
 
-	std::vector<std::pair<int, int>> path;
+	std::vector<Node*> path;
 
 	Grid grid;
 	Player p1;
@@ -61,5 +65,8 @@ private:
 
 	int deplacement = 0;
 
+    int cost = 0;
+
 	bool attainable = true;
+    bool ActivateCost = false;
 };
