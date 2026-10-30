@@ -284,6 +284,19 @@ void App::Djikstra(Node* start, Node* target)
 
     while (toVisit.empty() == false)
     {
+        int minCost = cost + toVisit[0]->GetLevel();
+        int index = 0;
+
+        for (int i = 0; i < toVisit.size(); i++)
+        {
+            
+            if (minCost > cost + toVisit[i]->GetLevel())
+            {
+                minCost = cost + toVisit[i]->GetLevel();
+                index = i;
+            }
+        }
+
 
         Node* current = toVisit.front();
         toVisit.pop_back();
