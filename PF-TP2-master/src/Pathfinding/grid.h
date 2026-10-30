@@ -26,7 +26,7 @@ private:
 
 	std::vector<std::vector<Node*>> grid;
 
-	int row = 23;
-	int lines = 23;
+	int row = 29;
+	int lines = 29;
 };
 

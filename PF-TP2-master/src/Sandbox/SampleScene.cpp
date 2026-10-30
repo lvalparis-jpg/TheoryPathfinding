@@ -272,33 +272,6 @@ void SampleScene::DrawSquare(Vector2f center, float size, const Color& color, bo
     }
 }
 
-//void SampleScene::InitObstacles()
-//{
-//    for (int i = 4; i < 7; i++)
-//        mGrid[i][5]->SetIsWall(true);
-//
-//    for (int i = 2; i < 5; i++)
-//        mGrid[8][i]->SetIsWall(true);
-//
-//    for (int i = 0; i < 5; i++)
-//        mGrid[i][3]->SetIsWall(true);
-//
-//    for (int i = 0; i < 8; i++)
-//        mGrid[i][7]->SetIsWall(true);
-//
-//    for (int i = 0; i < 2; i++)
-//        mGrid[1][i]->SetIsWall(true);
-//
-//    for (int i = 7; i < 10; i++)
-//        mGrid[1][i]->SetIsWall(true);
-//
-//    for (int i = 1; i < 3; i++)
-//        mGrid[3][i]->SetIsWall(true);
-//
-//    for (int i = 0; i < 5; i++)
-//        mGrid[i][10]->SetIsWall(true);
-//}
-
 void SampleScene::addEntranceAndExit() {
 
     // Set the entrance at the top (fixed)
