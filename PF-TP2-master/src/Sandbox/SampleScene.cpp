@@ -95,7 +95,9 @@ bool SampleScene::IsInGrid(int row, int col)
 
 void SampleScene::StartPathfinding()
 {
-    mReachable = BFS(mpPlayerNode, mpCursorNode);
+    mApp.BFS(mGrid, mpPlayerNode, mpCursorNode);   // ou mApp.Djikstra(mGrid, ...)
+    mReachable = mApp.GetAttainable();
+    mPath = mApp.GetPath();                        // on récupère le chemin calculé
 
     if (mReachable && mPath.empty() == false)
     {
@@ -112,60 +114,6 @@ void SampleScene::ResetVisited()
         for (int j = 0; j < mGrid.GetRowSize(); j++)
             mGrid[i][j]->SetIsVisited(false);
     }
-}
-
-bool SampleScene::BFS(Node* start, Node* target)
-{
-    ResetVisited();
-    mPath.clear();
-
-    std::queue<Node*> toVisit;
-    std::unordered_map<Node*, Node*> parent;
-
-    const int dx[4] = { -1, 1, 0, 0 };
-    const int dy[4] = { 0, 0, -1, 1 };
-
-    toVisit.push(start);
-    start->SetIsVisited(true);
-
-    while (toVisit.empty() == false)
-    {
-        Node* current = toVisit.front();
-        toVisit.pop();
-
-        if (current == target)
-            break;
-
-        for (int d = 0; d < 4; d++)
-        {
-            int nx = current->GetX() + dx[d];
-            int ny = current->GetY() + dy[d];
-
-            if (IsInGrid(nx, ny) == false)
-                continue;
-
-            Node* next = mGrid[nx][ny];
-
-            if (next->GetIsWall())
-                continue;
-
-            if (next->GetIsVisited())
-                continue;
-
-            next->SetIsVisited(true);
-            parent[next] = current;
-            toVisit.push(next);
-        }
-    }
-
-    if (target->GetIsVisited() == false)
-        return false;
-
-    for (Node* cur = target; cur != start; cur = parent[cur])
-        mPath.push_back(cur);
-
-    std::reverse(mPath.begin(), mPath.end());
-    return true;
 }
 
 void SampleScene::UpdateMovement()

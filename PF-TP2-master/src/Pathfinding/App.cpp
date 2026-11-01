@@ -3,6 +3,8 @@
 #include <thread>
 #include <chrono>
 #include <queue>
+#include <algorithm>
+#include <limits>
 
 App::App()
 {
@@ -36,7 +38,7 @@ void App::DrawGrid()
         {
             if (i == p1.GetxP() && j == p1.GetyP() && i == c1.GetxC() && j == c1.GetyC())
             {
-                std::cout << "[" << RED << "O" << White << "]";
+                std::cout << "[" << Ansi::Red << "O" << Ansi::White << "]";
             }
             else if (i == p1.GetxP() && j == p1.GetyP())
             {
@@ -44,11 +46,11 @@ void App::DrawGrid()
             }
             else if (i == c1.GetxC() && j == c1.GetyC())
             {
-                std::cout << "[" << RED << " " << White <<"]";
+                std::cout << "[" << Ansi::Red << " " << Ansi::White <<"]";
             }
             else if (grid[i][j]->GetIsWall() == true && i == c1.GetxC() && j == c1.GetyC())
             {
-                std::cout << "[" << RED << "H" << White << "]";
+                std::cout << "[" << Ansi::Red << "H" << Ansi::White << "]";
             }
             else if (grid[i][j]->GetIsWall() == true)
             {
@@ -118,7 +120,7 @@ void App::HandleInput()
             deplacement++;
         }
         break;
-    case ENTER:
+    case KEY_ENTER:
         attainable = true;
 
         tempNode1->SetX(p1.GetxP());
@@ -147,207 +149,195 @@ void App::HandleInput()
             }
         }
         break;
-    case ESCAPE:
+    case KEY_ESCAPE:
         exit(0);
     }
 }
 
+static std::vector<Node*> RebuildPath(const std::vector<std::vector<Node*>>& parent,
+    Node* s, Node* t)
+{
+    std::vector<Node*> result;
+    for (Node* cur = t; cur != s; cur = parent[cur->GetX()][cur->GetY()])
+        result.push_back(cur);
+    std::reverse(result.begin(), result.end());
+    return result;
+}
+
 void App::BFS(Node* start, Node* target)
 {
-    int lines = grid.GetColSize();
-    int rows = grid.GetRowSize();
+    BFS(grid, start, target);
+}
 
+void App::BFS(Grid& g, Node* start, Node* target)
+{
+    attainable = true;
+    path.clear();
+    deplacement = 0;
+
+    const int lines = g.GetColSize();   // nombre de lignes
+    const int cols = g.GetRowSize();   // nombre de colonnes
+
+    // On travaille toujours avec les vrais nœuds de la grille
+    Node* s = g[start->GetX()][start->GetY()];
+    Node* t = g[target->GetX()][target->GetY()];
+
+    std::vector<std::vector<bool>>  visited(lines, std::vector<bool>(cols, false));
+    std::vector<std::vector<Node*>> parent(lines, std::vector<Node*>(cols, nullptr));
     std::queue<Node*> toVisit;
 
-    std::vector<std::vector<bool>> visited;
-    std::vector<std::vector<Node*>> parent;
+    const int dx[4] = { -1, 1, 0, 0 };
+    const int dy[4] = { 0, 0, -1, 1 };
 
-    visited.resize(lines);
-    parent.resize(lines);
+    toVisit.push(s);
+    visited[s->GetX()][s->GetY()] = true;
 
-    Node* tempNode = new Node();
-
-    for (int i = 0; i < lines; i++)
+    while (!toVisit.empty())
     {
-        visited[i].resize(rows);
-        parent[i].resize(rows);
-
-        for (int j = 0; j < rows; j++)
-        {
-            visited[i][j] = false;
-            parent[i][j]->SetX(-1);
-            parent[i][j]->SetY(-1);
-        }
-    }
-
-    int dx[4] = { -1, 1, 0, 0 };
-    int dy[4] = { 0, 0, -1, 1 };
-
-    toVisit.push(start);
-
-    visited[start->GetX()][start->GetY()] = true;
-
-    while (toVisit.empty() == false)
-    {
-
         Node* current = toVisit.front();
         toVisit.pop();
 
-        if (current == target)
+        if (current == t)
             break;
 
         for (int d = 0; d < 4; d++)
         {
-
             int nx = current->GetX() + dx[d];
             int ny = current->GetY() + dy[d];
 
-            //verifie si hors limite
-            if (nx > rows - 1 || nx < 0)
-                continue;
-            else if (ny > lines - 1 || ny < 0)
-                continue;
+            if (nx < 0 || nx >= lines || ny < 0 || ny >= cols)
+                continue; // hors limites
 
-            //verifie mur
-            if (grid[nx][ny]->GetIsWall() == true)
-                continue;
+            if (g[nx][ny]->GetIsWall())
+                continue; // mur
 
-            //verifie si deja passer
             if (visited[nx][ny])
-                continue;
+                continue; // déjà vu
 
             visited[nx][ny] = true;
             parent[nx][ny] = current;
-            tempNode->SetX(nx);
-            tempNode->SetY(ny);
-            toVisit.push(tempNode);
+            toVisit.push(g[nx][ny]);
         }
     }
 
-    std::vector<Node*> result;
-
-    if (visited[target->GetX()][target->GetY()] == false)
+    if (!visited[t->GetX()][t->GetY()])
     {
         attainable = false;
         return;
     }
 
-    for (Node* cur = target; cur != start; cur = parent[cur->GetX()][cur->GetY()])
-        result.push_back(cur);
-
-    std::reverse(result.begin(), result.end());
-
-    deplacement = result.size();
-    path = result;
+    path = RebuildPath(parent, s, t);
+    deplacement = static_cast<int>(path.size());
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void App::Djikstra(Node* start, Node* target)
 {
-    int lines = grid.GetColSize();
-    int rows = grid.GetRowSize();
+    Djikstra(grid, start, target);
+}
 
-    std::vector<Node*> toVisit;
+void App::Djikstra(Grid& g, Node* start, Node* target)
+{
+    attainable = true;
+    path.clear();
+    deplacement = 0;
+    cost = 0;
 
-    std::vector<std::vector<bool>> visited;
-    std::vector<std::vector<Node*>> parent;
+    const int lines = g.GetColSize();
+    const int cols = g.GetRowSize();
+    const int INF = std::numeric_limits<int>::max();
 
-    visited.resize(lines);
-    parent.resize(lines);
+    Node* s = g[start->GetX()][start->GetY()];
+    Node* t = g[target->GetX()][target->GetY()];
 
-    Node* tempNode = new Node();
+    std::vector<std::vector<int>>   dist(lines, std::vector<int>(cols, INF));
+    std::vector<std::vector<Node*>> parent(lines, std::vector<Node*>(cols, nullptr));
 
-    for (int i = 0; i < lines; i++)
+    // File de priorité : le plus petit coût sort en premier
+    using Entry = std::pair<int, Node*>;
+    auto cmp = [](const Entry& a, const Entry& b) { return a.first > b.first; };
+    std::priority_queue<Entry, std::vector<Entry>, decltype(cmp)> toVisit(cmp);
+
+    const int dx[4] = { -1, 1, 0, 0 };
+    const int dy[4] = { 0, 0, -1, 1 };
+
+    dist[s->GetX()][s->GetY()] = 0;
+    toVisit.push({ 0, s });
+
+    while (!toVisit.empty())
     {
-        visited[i].resize(rows);
-        parent[i].resize(rows);
+        auto [d, current] = toVisit.top();
+        toVisit.pop();
 
-        for (int j = 0; j < rows; j++)
+        // Entrée périmée : on a déjà trouvé mieux pour ce nœud
+        if (d > dist[current->GetX()][current->GetY()])
+            continue;
+
+        if (current == t)
+            break;
+
+        for (int i = 0; i < 4; i++)
         {
-            visited[i][j] = false;
-            parent[i][j]->SetX(-1);
-            parent[i][j]->SetY(-1);
-        }
-    }
+            int nx = current->GetX() + dx[i];
+            int ny = current->GetY() + dy[i];
 
-    int dx[4] = { -1, 1, 0, 0 };
-    int dy[4] = { 0, 0, -1, 1 };
+            if (nx < 0 || nx >= lines || ny < 0 || ny >= cols)
+                continue;
 
-    toVisit.push_back(start);
+            if (g[nx][ny]->GetIsWall())
+                continue;
 
-    visited[start->GetX()][start->GetY()] = true;
+            // Coût pour entrer dans la case voisine (minimum 1)
+            int nd = d + std::max(1, static_cast<int>(g[nx][ny]->GetLevel()));
 
-    int minCost = 0;
-
-    while (toVisit.empty() == false)
-    {
-        int minCost = cost + toVisit[0]->GetLevel();
-        int index = 0;
-
-        for (int i = 0; i < toVisit.size(); i++)
-        {
-            
-            if (minCost > cost + toVisit[i]->GetLevel())
+            if (nd < dist[nx][ny])      // meilleur chemin trouvé
             {
-                minCost = cost + toVisit[i]->GetLevel();
-                index = i;
+                dist[nx][ny] = nd;
+                parent[nx][ny] = current;
+                toVisit.push({ nd, g[nx][ny] });
             }
         }
-
-
-        Node* current = toVisit.front();
-        toVisit.pop_back();
-
-        if (current == target)
-            break;
-        
-        for (int d = 0; d < 4; d++)
-        {
-
-            int nx = current->GetX() + dx[d];
-            int ny = current->GetY() + dy[d];
-
-            //verifie si hors limite
-            if (nx > rows - 1 || nx < 0)
-                continue;
-            else if (ny > lines - 1 || ny < 0)
-                continue;
-
-            //verifie mur
-            if (grid[nx][ny]->GetIsWall() == true)
-                continue;
-
-            //verifie si deja passer
-            if (visited[nx][ny])
-                continue;
-
-            visited[nx][ny] = true;
-            parent[nx][ny] = current;
-            cost = cost + current->GetLevel();
-            tempNode->SetX(nx);
-            tempNode->SetY(ny);
-            toVisit.push_back(tempNode);
-        }
     }
 
-    std::vector<Node*> result;
-
-    if (visited[target->GetX()][target->GetY()] == false)
+    if (dist[t->GetX()][t->GetY()] == INF)
     {
         attainable = false;
         return;
     }
 
-    for (Node* cur = target; cur != start; cur = parent[cur->GetX()][cur->GetY()])
-        result.push_back(cur);
+    cost = dist[t->GetX()][t->GetY()];
+    path = RebuildPath(parent, s, t);
+    deplacement = static_cast<int>(path.size());
+}
 
-    std::reverse(result.begin(), result.end());
+int App::partition(std::vector<int>& vec, int low, int high)
+{
+    // Pivot = élément du milieu, placé à la fin (évite le pire cas sur un tableau déjà trié)
+    int mid = low + (high - low) / 2;
+    std::swap(vec[mid], vec[high]);
+    int pivot = vec[high];
 
-    deplacement = result.size();
-    path = result;
+    int i = low - 1;                      // dernière position de la zone "<= pivot"
+    for (int j = low; j < high; j++)
+    {
+        if (vec[j] <= pivot)
+        {
+            i++;
+            std::swap(vec[i], vec[j]);
+        }
+    }
+
+    std::swap(vec[i + 1], vec[high]);     // le pivot prend sa place définitive
+    return i + 1;
+}
+
+void App::quickSort(std::vector<int>& vec, int low, int high)
+{
+    if (low >= high)                      // 0 ou 1 élément : déjà trié
+        return;
+
+    int p = partition(vec, low, high);
+    quickSort(vec, low, p - 1);
+    quickSort(vec, p + 1, high);
 }
 
 void App::InitObstacle()

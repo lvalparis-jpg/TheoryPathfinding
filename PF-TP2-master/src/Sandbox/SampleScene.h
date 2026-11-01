@@ -1,5 +1,4 @@
 #pragma once
-#include "SampleScene.h"
 #include "DummyEntity.h"
 #include "InputManager.h"
 #include "Debug.h"
@@ -7,6 +6,7 @@
 #include "Vector.h"
 #include "grid.h"
 
+#include <App.h>
 #include <Entity.h>
 #include <queue>
 #include <unordered_map>
@@ -21,6 +21,8 @@ class SampleScene : public Scene
 {
     float CELL_SIZE = 32.f;
     float STEP_DELAY = 0.001f;
+
+    App mApp;
 
     Grid mGrid;
     Vector2f mOrigin = { 0.f, 0.f };
@@ -40,7 +42,6 @@ class SampleScene : public Scene
     void HandleInput();
     void MoveCursor(int dRow, int dCol);
     void StartPathfinding();
-    bool BFS(Node* start, Node* target);
     void ResetVisited();
     void UpdateMovement();
 

@@ -1,13 +1,17 @@
 #pragma once
 #include "grid.h"
 #include <iostream>
+#include <vector>
 
-#define RED "\033[41m"
-#define WHITE "\033[47m"
-#define White "\033[0;37m"
+namespace Ansi
+{
+    constexpr const char* Red = "\033[41m";
+    constexpr const char* WhiteBg = "\033[47m";
+    constexpr const char* White = "\033[0;37m";
+}
 
-#define ENTER 13
-#define ESCAPE 27
+constexpr int KEY_ENTER = 13;
+constexpr int KEY_ESCAPE = 27;
 
 struct Player
 {
@@ -48,12 +52,18 @@ public:
 	void Draw();
 	void DrawGrid();
 	void HandleInput();
-	void BFS(Node* start, Node* target);
-	void Djikstra(Node* start, Node* target);
 	void InitObstacle();
+    void BFS(Node* start, Node* target);                  // grille interne (console)
+    void BFS(Grid& g, Node* start, Node* target);         // grille de ton choix
+    void Djikstra(Node* start, Node* target);
+    void Djikstra(Grid& g, Node* start, Node* target);
 
-    int partition(std::vector<int>& vec, int low, int high);
+    int  partition(std::vector<int>& vec, int low, int high);
     void quickSort(std::vector<int>& vec, int low, int high);
+
+    bool GetAttainable() { return attainable; }
+    const std::vector<Node*>& GetPath() const { return path; }
+    int  GetCost() const { return cost; }
 
 private:
 
