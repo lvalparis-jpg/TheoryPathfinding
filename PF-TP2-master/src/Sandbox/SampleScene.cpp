@@ -77,6 +77,26 @@ void SampleScene::HandleInput()
         if (IsInGrid(row, col))
             mpCursorNode = mGrid[row][col];
     }
+
+    if (input->IsMouseDown(SDL_BUTTON_RIGHT))
+    {
+        Vector2f mouse = input->GetMousePosition();
+        int col = static_cast<int>(std::floor((mouse.x - mOrigin.x) / CELL_SIZE));
+        int row = static_cast<int>(std::floor((mouse.y - mOrigin.y) / CELL_SIZE));
+
+        if (IsInGrid(row, col))
+        {
+            if (mGrid[row][col]->GetIsWall())
+            {
+                mGrid[row][col]->SetIsWall(false);
+            }
+            else
+            {
+                mGrid[row][col]->SetIsWall(true);
+            }
+        }
+            
+    }
 }
 
 void SampleScene::MoveCursor(int dRow, int dCol)

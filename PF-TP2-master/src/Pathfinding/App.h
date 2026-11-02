@@ -52,9 +52,9 @@ public:
 	void Draw();
 	void DrawGrid();
 	void HandleInput();
-	void InitObstacle();
+	//void InitObstacle();
     void BFS(Node* start, Node* target);                  // grille interne (console)
-    void BFS(Grid& g, Node* start, Node* target);         // grille de ton choix
+    void BFS(Grid& g, Node* start, Node* target);         // grille au choix
     void Djikstra(Node* start, Node* target);
     void Djikstra(Grid& g, Node* start, Node* target);
 
@@ -78,5 +78,5 @@ private:
     int cost = 0;
 
 	bool attainable = true;
-    bool ActivateCost = false;
+    bool ActivateCost = true;
 };

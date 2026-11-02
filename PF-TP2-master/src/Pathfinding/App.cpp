@@ -10,7 +10,7 @@ App::App()
 {
     p1;
     c1;
-    InitObstacle();
+    /*InitObstacle();*/
     DrawGrid();
 }
 
@@ -230,6 +230,10 @@ void App::BFS(Grid& g, Node* start, Node* target)
     deplacement = static_cast<int>(path.size());
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void App::Djikstra(Node* start, Node* target)
 {
     Djikstra(grid, start, target);
@@ -340,34 +344,34 @@ void App::quickSort(std::vector<int>& vec, int low, int high)
     quickSort(vec, p + 1, high);
 }
 
-void App::InitObstacle()
-{
-    for (int i = 4; i < 7;i++)
-    {
-        grid[i][5]->SetIsWall(true);
-    }
-    for (int i = 2; i < 5;i++)
-    {
-        grid[8][i]->SetIsWall(true);
-    }
-    for (int i = 0; i < 5;i++)
-    {
-        grid[i][3]->SetIsWall(true);
-    }
-    for (int i = 0; i < 8;i++)
-    {
-        grid[i][7]->SetIsWall(true);
-    }
-    for (int i = 0; i < 2;i++)
-    {
-        grid[1][i]->SetIsWall(true);
-    }
-    for (int i = 7; i < 10;i++)
-    {
-        grid[1][i]->SetIsWall(true);
-    }
-    for (int i = 1; i < 3;i++)
-    {
-        grid[3][i]->SetIsWall(true);
-    }
-}
+//void App::InitObstacle()
+//{
+//    for (int i = 4; i < 7;i++)
+//    {
+//        grid[i][5]->SetIsWall(true);
+//    }
+//    for (int i = 2; i < 5;i++)
+//    {
+//        grid[8][i]->SetIsWall(true);
+//    }
+//    for (int i = 0; i < 5;i++)
+//    {
+//        grid[i][3]->SetIsWall(true);
+//    }
+//    for (int i = 0; i < 8;i++)
+//    {
+//        grid[i][7]->SetIsWall(true);
+//    }
+//    for (int i = 0; i < 2;i++)
+//    {
+//        grid[1][i]->SetIsWall(true);
+//    }
+//    for (int i = 7; i < 10;i++)
+//    {
+//        grid[1][i]->SetIsWall(true);
+//    }
+//    for (int i = 1; i < 3;i++)
+//    {
+//        grid[3][i]->SetIsWall(true);
+//    }
+//}
