@@ -11,6 +11,7 @@ private:
 
     bool IsVisited;
     bool IsWall;
+    bool IsBlocked = false; //taken
 
 public:
 

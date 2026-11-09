@@ -52,14 +52,9 @@ public:
 	void Draw();
 	void DrawGrid();
 	void HandleInput();
-	//void InitObstacle();
-    void BFS(Node* start, Node* target);                  // grille interne (console)
-    void BFS(Grid& g, Node* start, Node* target);         // grille au choix
-    void Djikstra(Node* start, Node* target);
-    void Djikstra(Grid& g, Node* start, Node* target);
 
-    int  partition(std::vector<int>& vec, int low, int high);
-    void quickSort(std::vector<int>& vec, int low, int high);
+    void BFS(Grid& g, Node* start, Node* target);
+    void Djikstra(Grid& g, Node* start, Node* target);
 
     bool GetAttainable() { return attainable; }
     const std::vector<Node*>& GetPath() const { return path; }

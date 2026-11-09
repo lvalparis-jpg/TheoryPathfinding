@@ -130,11 +130,11 @@ void App::HandleInput()
 
         if (ActivateCost)
         {
-            Djikstra(tempNode1, tempNode2);
+            Djikstra(grid,tempNode1, tempNode2);
         }
         else
         {
-            BFS(tempNode1,tempNode2);
+            BFS(grid,tempNode1,tempNode2);
         }
 
         if (attainable)
@@ -164,26 +164,20 @@ static std::vector<Node*> RebuildPath(const std::vector<std::vector<Node*>>& par
     return result;
 }
 
-void App::BFS(Node* start, Node* target)
-{
-    BFS(grid, start, target);
-}
-
 void App::BFS(Grid& g, Node* start, Node* target)
 {
     attainable = true;
     path.clear();
     deplacement = 0;
 
-    const int lines = g.GetColSize();   // nombre de lignes
-    const int cols = g.GetRowSize();   // nombre de colonnes
+    const int lines = g.GetColSize();
+    const int cols = g.GetRowSize();
 
-    // On travaille toujours avec les vrais nœuds de la grille
     Node* s = g[start->GetX()][start->GetY()];
     Node* t = g[target->GetX()][target->GetY()];
 
-    std::vector<std::vector<bool>>  visited(lines, std::vector<bool>(cols, false));
-    std::vector<std::vector<Node*>> parent(lines, std::vector<Node*>(cols, nullptr));
+    std::vector<std::vector<bool>>  visited(lines, std::vector<bool>(cols, false));//Crée un tableau de tableau de booléens pour savoir si on a déjà visité une case // j'adore cette feature 
+    std::vector<std::vector<Node*>> parent(lines, std::vector<Node*>(cols, nullptr));//Crée un tableau de tableau de pointeurs vers les parents pour reconstruire le chemin
     std::queue<Node*> toVisit;
 
     const int dx[4] = { -1, 1, 0, 0 };
@@ -211,6 +205,9 @@ void App::BFS(Grid& g, Node* start, Node* target)
             if (g[nx][ny]->GetIsWall())
                 continue; // mur
 
+            if (g[nx][ny]->GetIsBlocked())
+                continue; //case prise par agent
+
             if (visited[nx][ny])
                 continue; // déjà vu
 
@@ -234,11 +231,6 @@ void App::BFS(Grid& g, Node* start, Node* target)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void App::Djikstra(Node* start, Node* target)
-{
-    Djikstra(grid, start, target);
-}
-
 void App::Djikstra(Grid& g, Node* start, Node* target)
 {
     attainable = true;
@@ -248,7 +240,8 @@ void App::Djikstra(Grid& g, Node* start, Node* target)
 
     const int lines = g.GetColSize();
     const int cols = g.GetRowSize();
-    const int INF = std::numeric_limits<int>::max();
+
+    constexpr int INF = std::numeric_limits<int>::max();// Valeur maximale d'un int pour représenter l'infini
 
     Node* s = g[start->GetX()][start->GetY()];
     Node* t = g[target->GetX()][target->GetY()];
@@ -257,9 +250,9 @@ void App::Djikstra(Grid& g, Node* start, Node* target)
     std::vector<std::vector<Node*>> parent(lines, std::vector<Node*>(cols, nullptr));
 
     // File de priorité : le plus petit coût sort en premier
-    using Entry = std::pair<int, Node*>;
-    auto cmp = [](const Entry& a, const Entry& b) { return a.first > b.first; };
-    std::priority_queue<Entry, std::vector<Entry>, decltype(cmp)> toVisit(cmp);
+
+    using QueueItem = std::pair<int, Node*>;   // (coût, case)
+    std::priority_queue<QueueItem, std::vector<QueueItem>, std::greater<QueueItem>> toVisit;
 
     const int dx[4] = { -1, 1, 0, 0 };
     const int dy[4] = { 0, 0, -1, 1 };
@@ -272,7 +265,7 @@ void App::Djikstra(Grid& g, Node* start, Node* target)
         auto [d, current] = toVisit.top();
         toVisit.pop();
 
-        // Entrée périmée : on a déjà trouvé mieux pour ce nœud
+        //on a déjà trouvé mieux pour ce nœud
         if (d > dist[current->GetX()][current->GetY()])
             continue;
 
@@ -284,19 +277,23 @@ void App::Djikstra(Grid& g, Node* start, Node* target)
             int nx = current->GetX() + dx[i];
             int ny = current->GetY() + dy[i];
 
-            if (nx < 0 || nx >= lines || ny < 0 || ny >= cols)
+            if (nx < 0 || nx >= lines || ny < 0 || ny >= cols)//hors limites
                 continue;
 
-            if (g[nx][ny]->GetIsWall())
+            if (g[nx][ny]->GetIsWall())//mur
                 continue;
 
-            // Coût pour entrer dans la case voisine (minimum 1)
-            int nd = d + std::max(1, static_cast<int>(g[nx][ny]->GetLevel()));
+            if (g[nx][ny]->GetIsBlocked())//agent
+                continue;
+
+            int nd = d + g[nx][ny]->GetLevel() + 1;
 
             if (nd < dist[nx][ny])      // meilleur chemin trouvé
             {
                 dist[nx][ny] = nd;
+
                 parent[nx][ny] = current;
+
                 toVisit.push({ nd, g[nx][ny] });
             }
         }
@@ -312,66 +309,3 @@ void App::Djikstra(Grid& g, Node* start, Node* target)
     path = RebuildPath(parent, s, t);
     deplacement = static_cast<int>(path.size());
 }
-
-int App::partition(std::vector<int>& vec, int low, int high)
-{
-    // Pivot = élément du milieu, placé à la fin (évite le pire cas sur un tableau déjà trié)
-    int mid = low + (high - low) / 2;
-    std::swap(vec[mid], vec[high]);
-    int pivot = vec[high];
-
-    int i = low - 1;                      // dernière position de la zone "<= pivot"
-    for (int j = low; j < high; j++)
-    {
-        if (vec[j] <= pivot)
-        {
-            i++;
-            std::swap(vec[i], vec[j]);
-        }
-    }
-
-    std::swap(vec[i + 1], vec[high]);     // le pivot prend sa place définitive
-    return i + 1;
-}
-
-void App::quickSort(std::vector<int>& vec, int low, int high)
-{
-    if (low >= high)                      // 0 ou 1 élément : déjà trié
-        return;
-
-    int p = partition(vec, low, high);
-    quickSort(vec, low, p - 1);
-    quickSort(vec, p + 1, high);
-}
-
-//void App::InitObstacle()
-//{
-//    for (int i = 4; i < 7;i++)
-//    {
-//        grid[i][5]->SetIsWall(true);
-//    }
-//    for (int i = 2; i < 5;i++)
-//    {
-//        grid[8][i]->SetIsWall(true);
-//    }
-//    for (int i = 0; i < 5;i++)
-//    {
-//        grid[i][3]->SetIsWall(true);
-//    }
-//    for (int i = 0; i < 8;i++)
-//    {
-//        grid[i][7]->SetIsWall(true);
-//    }
-//    for (int i = 0; i < 2;i++)
-//    {
-//        grid[1][i]->SetIsWall(true);
-//    }
-//    for (int i = 7; i < 10;i++)
-//    {
-//        grid[1][i]->SetIsWall(true);
-//    }
-//    for (int i = 1; i < 3;i++)
-//    {
-//        grid[3][i]->SetIsWall(true);
-//    }
-//}
